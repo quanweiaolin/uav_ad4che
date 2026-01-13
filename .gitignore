@@ -1,0 +1,115 @@
+# ----------------------------
+# Python / Build / Bytecode
+# ----------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.dll
+
+# virtual environments
+venv/
+.env/
+.venv/
+env/
+ENV/
+
+# pip download cache
+pip-wheel-metadata/
+pip-log.txt
+
+# Python egg files
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# ----------------------------
+# VSCode / IDE
+# ----------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ----------------------------
+# UAV Pipeline Workspace
+# ----------------------------
+workdir/
+artifacts/
+logs/
+output/
+export/
+checkpoints/
+manifest.json
+
+# local video/image data
+*.mp4
+*.MP4
+*.avi
+*.mov
+*.jpg
+*.jpeg
+*.png
+*.bmp
+
+data/
+datasets/
+input/
+tmp/
+
+# ----------------------------
+# Airflow Local Environment
+# ----------------------------
+airflow/
+airflow.cfg
+logs/
+*.log
+
+# For dockerized airflow
+docker-compose.yaml
+dags/
+plugins/
+
+# ----------------------------
+# MinIO / S3 Temp Files
+# ----------------------------
+minio-data/
+minio/
+.s3/
+.cache/
+.cache/*
+
+# ----------------------------
+# Docker / Containers
+# ----------------------------
+docker/
+Dockerfile.*
+docker-compose.*
+*.tar
+*.img
+*.pid
+
+# ----------------------------
+# OS Generated Files
+# ----------------------------
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# ----------------------------
+# Jupyter / Notebooks
+# ----------------------------
+.ipynb_checkpoints/
+*.ipynb
+
+# ----------------------------
+# Testing / Coverage
+# ----------------------------
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+pytest_cache/
