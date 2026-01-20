@@ -60,7 +60,7 @@ class ExtractFramesStage(Stage):
                 "fps": self.fps,
                 "video": str(video_path)
             },
-            persistent=False  # frames 可以持久化
+            persistent=False  # frames 是否持久化: No
         )
 
         ctx.artifacts_register.register(artifact)

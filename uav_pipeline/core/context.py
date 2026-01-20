@@ -16,7 +16,7 @@ class JobContext:
     ):
         self.job_id = job_id
         self.video_path = Path(video_path)
-        self.workdir = Path(workdir)
+        self.workdir = Path(workdir) / "jobs" / job_id
         self.config = config
 
         self.artifacts_register = artifacts_register

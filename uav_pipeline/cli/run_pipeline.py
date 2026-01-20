@@ -10,47 +10,67 @@ from uav_pipeline.storage.storage_factory import create_storage
 from uav_pipeline.core.registry import ArtifactRegistry
 from uav_pipeline.utils.logger import PipelineLogger
 from uav_pipeline.utils.config_loader import load_config
+from uav_pipeline.utils.jobid_generator import generate_job_id
+
 
 from pathlib import Path
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Run UAV Perception Pipeline")
-    parser.add_argument("--job-id", required=True, help="Unique job identifier")
-    parser.add_argument("--video-path", required=True, help="Input video file")
+    # Single Video
+    parser.add_argument("--video-path", default=None, help="Input video file")
+    parser.add_argument("--job-id", default=None, help="Optional job_id for single video")
+    # Multi Videos
+    parser.add_argument("--video-list", default=None, help="Text file with list of videos for batch mode")
+    parser.add_argument("--max-workers", type=int, default=4, help="Max concurrent processes for batch mode")
+    # General Settings
     parser.add_argument("--workdir", required=True, help="Working directory")
     parser.add_argument("--storage", default="local", choices=["local", "s3"], help="Storage backend")
     parser.add_argument("--config", default=None, help="Optional config YAML")
-    return parser.parse_args()
+
+    args = parser.parse_args()
+    if args.video_path and args.video_list:
+        parser.error("Cannot specify both --video-path and --video-list")
+    if not args.video_path and not args.video_list:
+        parser.error("Must specify either --video-path or --video-list")
+
+    return args
+
+
 
 
 def main():
     args = parse_args()
-    registry = ArtifactRegistry()
-    
-    ctx = JobContext(
-        job_id=args.job_id,
-        video_path=Path(args.video_path),
-        workdir=Path(args.workdir),
-        config=load_config(args.config),
-        artifacts_register=registry,
-        logger=PipelineLogger
-    )
+    if args.video_path:
 
-    
-
-    # try:
-    for stage in PIPELINE:
-        ctx.logger.info(f"Starting stage: {stage.__class__.__name__}")
-        stage.run(ctx)
-    # except Exception as e:
-    #     ctx.logger.error(f"Pipeline failed at stage {stage}: {str(e)}")
-    #     sys.exit(1)
-
-    storage = create_storage(args.storage,ctx.config)
-    manager = ArtifactManager(storage)
-    manager.finalize_job(ctx)
-
-    ctx.logger.info("Job completed successfully.")
+        from uav_pipeline.cli.run_single_video import run_single_video
+        run_single_video(
+            video_path=args.video_path,
+            workdir=args.workdir,
+            job_id=args.job_id,
+            storage=args.storage,
+            config=args.config
+        )
+    else:
+        # 批量多视频模式
+        from concurrent.futures import ProcessPoolExecutor
+        from uav_pipeline.cli.run_single_video import run_single_video
+        with open(args.video_list) as f:
+            videos = [line.strip() for line in f if line.strip()]
+        with ProcessPoolExecutor(max_workers=args.max_workers) as executor:
+            results = list(
+                executor.map(
+                    lambda v: run_single_video(
+                        video_path=v,
+                        workdir=args.workdir,
+                        job_id=None,  # 自动生成
+                        storage=args.storage,
+                        config=args.config
+                    ),
+                    videos
+                )
+            )
+        print("Finished jobs:", results)
 
 if __name__ == "__main__":
     main()
