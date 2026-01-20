@@ -15,8 +15,8 @@ from uav_pipeline.utils.jobid_generator import generate_job_id
 
 
 def run_single_video(video_path, workdir, job_id=None, storage="local", config=None):
-    if job_id is None:
-        job_id = generate_job_id(video_path)
+    if not job_id:
+        raise ValueError("job_id must be provided")
 
     registry = ArtifactRegistry()
     ctx = JobContext(

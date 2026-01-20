@@ -42,35 +42,60 @@ def parse_args():
 def main():
     args = parse_args()
     if args.video_path:
-
+        # 单视频模式
         from uav_pipeline.cli.run_single_video import run_single_video
+        if args.job_id is None:
+            job_id = generate_job_id(args.video_path)
+        else:
+            job_id = args.job_id
         run_single_video(
             video_path=args.video_path,
             workdir=args.workdir,
-            job_id=args.job_id,
+            job_id=job_id,
             storage=args.storage,
             config=args.config
         )
     else:
         # 批量多视频模式
-        from concurrent.futures import ProcessPoolExecutor
+        from concurrent.futures import ProcessPoolExecutor,as_completed
         from uav_pipeline.cli.run_single_video import run_single_video
-        with open(args.video_list) as f:
-            videos = [line.strip() for line in f if line.strip()]
+        import json
+        with open(args.video_list, "r") as f:
+            jobs_spec = json.load(f)
+        jobs = jobs_spec["jobs"]
+        results = []
         with ProcessPoolExecutor(max_workers=args.max_workers) as executor:
-            results = list(
-                executor.map(
-                    lambda v: run_single_video(
-                        video_path=v,
-                        workdir=args.workdir,
-                        job_id=None,  # 自动生成
-                        storage=args.storage,
-                        config=args.config
-                    ),
-                    videos
-                )
-            )
-        print("Finished jobs:", results)
+            future_to_job = {
+                executor.submit(
+                run_single_video,
+                video_path=job["video_path"],
+                workdir=args.workdir,
+                job_id=job["job_id"],
+                storage=args.storage,
+                config=args.config,
+                ): job
+                for job in jobs
+            }
+            for future in as_completed(future_to_job):
+                job = future_to_job[future]
+                try:
+                    result = future.result()
+                    results.append(
+                        {
+                            "job_id": job["job_id"],
+                            "status": "success",
+                        }
+                    )
+                except Exception as e:
+                    results.append(
+                        {
+                            "job_id": job["job_id"],
+                            "status": "failed",
+                            "error": str(e),
+                        }
+                    )
+
+
 
 if __name__ == "__main__":
     main()
