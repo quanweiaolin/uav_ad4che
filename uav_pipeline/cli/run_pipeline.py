@@ -1,21 +1,22 @@
 # 所有入口（本地 / batch / airflow）
 import sys 
 sys.path.append("/mnt/DataBackup/Workspace/Docker/UAV")
-
 import argparse
+import os
 from uav_pipeline.pipeline.perception_pipeline import PIPELINE
 from uav_pipeline.core.context import JobContext
 from uav_pipeline.core.artifact_manager import ArtifactManager
 from uav_pipeline.storage.storage_factory import create_storage
 from uav_pipeline.core.registry import ArtifactRegistry
 from uav_pipeline.utils.logger import PipelineLogger
-from uav_pipeline.utils.config_loader import load_config
+# from uav_pipeline.utils.config_loader import load_config
 from uav_pipeline.utils.jobid_generator import generate_job_id
-
+from uav_pipeline.core.job_input import JobInput
 
 from pathlib import Path
 
 def parse_args():
+    default_config_path = os.path.dirname(os.path.dirname(__file__)) + "/config"
     parser = argparse.ArgumentParser(description="Run UAV Perception Pipeline")
     # Single Video
     parser.add_argument("--video-path", default=None, help="Input video file")
@@ -23,10 +24,18 @@ def parse_args():
     # Multi Videos
     parser.add_argument("--video-list", default=None, help="Text file with list of videos for batch mode")
     parser.add_argument("--max-workers", type=int, default=4, help="Max concurrent processes for batch mode")
+    
     # General Settings
+    parser.add_argument("--manual-ref-frame", default=None, help="Optional reference frame for all videos")
+    parser.add_argument("--mask", default=None)
+    
     parser.add_argument("--workdir", required=True, help="Working directory")
     parser.add_argument("--storage", default="local", choices=["local", "s3"], help="Storage backend")
-    parser.add_argument("--config", default=None, help="Optional config YAML")
+    parser.add_argument("--base-config", default=default_config_path + "/base_config.yaml", help="Optional config YAML")
+    parser.add_argument("--stage-config-dir", default=default_config_path + "/stages", help="Optional config YAML")
+    parser.add_argument("--env-config", default=default_config_path + "/environments/local.yaml", help="Optional config YAML")
+    parser.add_argument("--pipeline-config", default=default_config_path + "/pipeline/perception.yaml", help="Optional config YAML")
+    
 
     args = parser.parse_args()
     if args.video_path and args.video_list:
@@ -38,9 +47,9 @@ def parse_args():
 
 
 
-
 def main():
     args = parse_args()
+    
     if args.video_path:
         # 单视频模式
         from uav_pipeline.cli.run_single_video import run_single_video
@@ -48,14 +57,21 @@ def main():
             job_id = generate_job_id(args.video_path)
         else:
             job_id = args.job_id
+        print(f"Single Mode: job will be executed:")
+        print("\t{}".format(args.video_path))
         run_single_video(
             video_path=args.video_path,
             workdir=args.workdir,
             job_id=job_id,
             storage=args.storage,
-            config=args.config
+            base_config=args.base_config,
+            stage_config_dir=args.stage_config_dir,
+            pipeline_config=args.pipeline_config,
+            env_config = args.env_config,
+            manual_ref_frame=args.manual_ref_frame
         )
     else:
+        
         # 批量多视频模式
         from concurrent.futures import ProcessPoolExecutor,as_completed
         from uav_pipeline.cli.run_single_video import run_single_video
@@ -64,6 +80,9 @@ def main():
             jobs_spec = json.load(f)
         jobs = jobs_spec["jobs"]
         results = []
+        print(f"Batch Mode: {len(jobs)} jobs will be executed:")
+        for job in jobs:
+            print("\t{}".format(job["video_path"]))
         with ProcessPoolExecutor(max_workers=args.max_workers) as executor:
             future_to_job = {
                 executor.submit(
@@ -72,7 +91,11 @@ def main():
                 workdir=args.workdir,
                 job_id=job["job_id"],
                 storage=args.storage,
-                config=args.config,
+                base_config=args.base_config,
+                stage_config_dir=args.stage_config_dir,
+                env_config = args.env_config, 
+                pipeline_config = args.pipeline_config,
+                manual_ref_frame=args.manual_ref_frame
                 ): job
                 for job in jobs
             }

@@ -10,23 +10,33 @@ from uav_pipeline.core.artifact_manager import ArtifactManager
 from uav_pipeline.storage.storage_factory import create_storage
 from uav_pipeline.core.registry import ArtifactRegistry
 from uav_pipeline.utils.logger import PipelineLogger
-from uav_pipeline.utils.config_loader import load_config
+# from uav_pipeline.utils.config_loader import ConfigLoader
 from uav_pipeline.utils.jobid_generator import generate_job_id
+# from expired.register_algos import register_algos 
+from uav_pipeline.core.job_input import JobInput
 
 
-def run_single_video(video_path, workdir, job_id=None, storage="local", config=None):
+def run_single_video(video_path, workdir, base_config, stage_config_dir, env_config, pipeline_config, job_id=None, storage="local", manual_ref_frame = None, mask = None):
+    
     if not job_id:
         raise ValueError("job_id must be provided")
-
     registry = ArtifactRegistry()
+    # register_algos()
     ctx = JobContext(
         job_id=job_id,
         video_path=Path(video_path),
         workdir=Path(workdir),
-        config=load_config(config),
         artifacts_register=registry,
-        logger=PipelineLogger
+        logger=PipelineLogger,
+        base_config = base_config,
+        stage_config_dir = stage_config_dir,
+        pipeline_config=pipeline_config,
+        env_config = env_config
     )
+    job_input = JobInput(ctx.video_path, manual_ref_frame)
+    job_input.prepare_reference_frame(ctx.workdir)
+    job_input.register_to(ctx)
+
     # try:
     for stage in PIPELINE:
         ctx.logger.info(f"Starting stage: {stage.__class__.__name__}")

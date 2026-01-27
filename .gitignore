@@ -38,6 +38,7 @@ build/
 # UAV Pipeline Workspace
 # ----------------------------
 workdir/
+input/
 artifacts/
 logs/
 output/

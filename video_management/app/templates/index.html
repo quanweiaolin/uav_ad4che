@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Video Metadata Manager</title>
+</head>
+<body>
+<h2>Videos Needing Location</h2>
+
+{% for v in videos %}
+<div style="border:1px solid #ccc; margin:10px; padding:10px;">
+    <p><b>ID:</b> {{v.id}}</p>
+    <p>{{v.width}}x{{v.height}} | {{v.duration}}s | {{v.fps}}fps</p>
+
+    <video id="vid{{v.id}}" width="400" controls></video>
+    <br>
+
+    <input type="text" id="loc{{v.id}}" placeholder="Enter location">
+    <button onclick="save('{{v.id}}')">Save</button>
+</div>
+
+<script>
+fetch("/video_url/{{v.id}}")
+.then(r => r.json())
+.then(d => document.getElementById("vid{{v.id}}").src = d.url);
+
+function save(id){
+    const loc = document.getElementById("loc"+id).value;
+    fetch("/update_location/"+id, {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({location: loc})
+    }).then(()=>location.reload());
+}
+</script>
+{% endfor %}
+
+</body>
+</html>
