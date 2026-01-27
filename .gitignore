@@ -87,9 +87,9 @@ minio/
 # Docker / Containers
 # ----------------------------
 docker/
-Dockerfile.*
-docker-compose.*
-*.tar
+# Dockerfile.*
+# docker-compose.*
+# *.tar
 *.img
 *.pid
 
