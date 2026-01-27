@@ -89,7 +89,7 @@ minio/
 docker/
 # Dockerfile.*
 # docker-compose.*
-# *.tar
+*.tar
 *.img
 *.pid
 
