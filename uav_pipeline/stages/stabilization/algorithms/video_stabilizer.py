@@ -111,7 +111,7 @@ class VideoStabilizerV3:
 
     def stabilize(self):
         os.makedirs(os.path.dirname(self.output_video_path), exist_ok=True)
-        print(self.input_video_path)
+        
         cap = cv.VideoCapture(self.input_video_path)
         fps = cap.get(cv.CAP_PROP_FPS)
         self.width = int(cap.get(cv.CAP_PROP_FRAME_WIDTH))

@@ -18,16 +18,16 @@ class Stabilization_Stage(Stage):
         input_video = ctx.video_path
         stage_dir = ctx.get_stage_dir(self.stage_name)
         output_video = stage_dir / (ctx.video_path.stem + "_stabi" + ctx.video_path.suffix)
-        mask_path = ctx.get_artifact("input","reference_frame").local_path
+        # mask_path = ctx.get_artifact("input","mask").local_path
         global_ref = ctx.get_artifact("input","reference_frame").local_path
         # stage_cfg = ctx.config.load_stage_config(self.stage_name)
         config_adapter = ctx.get_adapter(self.stage_name)
         params = config_adapter.get_algorithm_params()
-
+        
         stabilizer = VideoStabilizerV3(
             input_video_path=str(input_video),
             output_video_path=str(output_video),
-            mask_img_path=str(mask_path),
+            # mask_img_path=str(mask_path),
             reference_frame_path=str(global_ref),
             params=params
         )
