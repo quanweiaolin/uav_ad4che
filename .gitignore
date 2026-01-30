@@ -99,6 +99,7 @@ docker/
 .DS_Store
 Thumbs.db
 ehthumbs.db
+*.db
 
 # ----------------------------
 # Jupyter / Notebooks
