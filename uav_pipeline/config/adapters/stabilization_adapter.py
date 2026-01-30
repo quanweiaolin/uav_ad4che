@@ -43,5 +43,10 @@ class StabilizationConfigAdapter:
         # ---------------------
         global_param = self.cfg.get("param", {})
         params.update(global_param)
+        # ---------------------
+        # Mode param
+        # ---------------------
+        # mode_param = self.cfg.get("mode", {})
+        # params.update(mode_param)
 
         return params
