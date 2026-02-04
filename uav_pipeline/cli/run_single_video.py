@@ -16,22 +16,23 @@ from uav_pipeline.utils.jobid_generator import generate_job_id
 from uav_pipeline.core.job_input import JobInput
 
 
-def run_single_video(video_path, workdir, base_config, stage_config_dir, env_config, pipeline_config, job_id=None, storage="local", manual_ref_frame = None, mask = None):
+def run_single_video(video_path, workdir, base_config, stage_config_dir, env_config, pipeline_config, job_id=None, storage="local", manual_ref_frame = None, mask = None, debug_mode = False):
     
     if not job_id:
         raise ValueError("job_id must be provided")
-    registry = ArtifactRegistry()
+    # registry = ArtifactRegistry()
     # register_algos()
     ctx = JobContext(
         job_id=job_id,
         video_path=Path(video_path),
-        workdir=Path(workdir),
-        artifacts_register=registry,
+        workdir=workdir,
+        # artifacts_register=registry,
         logger=PipelineLogger,
         base_config = base_config,
         stage_config_dir = stage_config_dir,
         pipeline_config=pipeline_config,
-        env_config = env_config
+        env_config = env_config,
+        debug_mode = debug_mode
     )
     job_input = JobInput(ctx.video_path, manual_ref_frame)
     job_input.prepare_reference_frame(ctx.workdir)
@@ -40,7 +41,11 @@ def run_single_video(video_path, workdir, base_config, stage_config_dir, env_con
     # try:
     for stage in PIPELINE:
         ctx.logger.info(f"Starting stage: {stage.__class__.__name__}")
-        stage.run(ctx)
+        if ctx.debug_mode:
+            stage.mock(ctx)
+        else:
+            stage.run(ctx)
+        
     # except Exception as e:
     #     ctx.logger.error(f"Pipeline failed at stage {stage}: {str(e)}")
     #     sys.exit(1)

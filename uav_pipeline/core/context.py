@@ -12,20 +12,21 @@ class JobContext:
         job_id: str,
         video_path: Path,
         workdir: Path,
-        artifacts_register:ArtifactRegistry,
+        # artifacts_register:ArtifactRegistry,
         logger:PipelineLogger,
         base_config: str,
         stage_config_dir: str, 
         env_config: str,
-        pipeline_config:str
+        pipeline_config:str,
+        debug_mode:bool
     ):
         self.job_id = job_id
         self.video_path = Path(video_path)
         self.workdir = Path(workdir) / "jobs" / job_id
         self.config = ConfigLoader(base_config, stage_config_dir, env_config, pipeline_config)
-
-        self.artifacts_register = artifacts_register
+        self.artifacts_register = ArtifactRegistry(self)
         self.logger = logger(job_id)
+        self.debug_mode = debug_mode
     
     def get_stage_dir(self, stage_name: str) -> Path:
         """deliver dir to each stage"""

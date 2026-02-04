@@ -90,7 +90,6 @@ class VideoStabilizerV3:
             self.ref_kp, self.ref_des = self.descriptor.compute(self.ref_gray, self.ref_kp)
             self.H0 = self.align_compute()
             return frame, 0, 0, 0
-
         curr_gray = preprocess_frame(frame, self.downsample_ratio)
         curr_kp = harris_corner_detect(curr_gray, self.mask, response_thresh=self.harris_response_thresh)
         curr_kp, curr_des = self.descriptor.compute(curr_gray, curr_kp)
@@ -119,12 +118,10 @@ class VideoStabilizerV3:
 
         fourcc = cv.VideoWriter_fourcc(*'mp4v')
         out = cv.VideoWriter(self.output_video_path, fourcc, fps, (self.width, self.height))
-
         while True:
             ret, frame = cap.read()
             if not ret:
                 break
-
             stabilized_frame, *_ = self.single_frame(frame)
             aligned_frame = cv.warpPerspective(stabilized_frame, self.H0, (self.width, self.height))
             out.write(aligned_frame)

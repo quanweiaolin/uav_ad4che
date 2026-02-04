@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>视频标注系统 - 管理</title>
+    <style>
+        /* 复用 index.html 的基础样式 */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f4f7f6; margin: 0; }
+        nav { background: #2c3e50; padding: 1rem 2rem; display: flex; align-items: center; }
+        nav a { color: white; text-decoration: none; margin-right: 20px; font-weight: 500; }
+        nav .active { border-bottom: 2px solid #3498db; }
+        .container { padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .card { background: white; border-radius: 10px; overflow: hidden; border-top: 5px solid #28a745; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .card img { width: 100%; height: 160px; object-fit: cover; }
+        .card-body { padding: 15px; }
+        .label-row { margin-bottom: 12px; }
+        label { display: block; font-size: 0.8rem; color: #909399; margin-bottom: 4px; }
+        input, select { width: 100%; box-sizing: border-box; padding: 8px; border: 1px solid #dcdfe6; border-radius: 4px; }
+        .actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn-update { flex: 2; background: #409eff; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; }
+        .btn-reset { flex: 1; background: #f56c6c; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; }
+        .status-tag { display: inline-block; padding: 2px 8px; background: #f0f9eb; color: #67c23a; border-radius: 10px; font-size: 0.7rem; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/">📥 待标注列表</a>
+    <a href="/manage" class="active">📂 已标注管理</a>
+</nav>
+
+<div class="container">
+    <h2 style="color: #2c3e50;">已完成标注资产 ({{ videos|length }} 条)</h2>
+    <div class="grid">
+        {% for v in videos %}
+        <div class="card" id="m_card_{{ loop.index }}">
+            <img src="/thumbs/{{ v.info.thumb }}">
+            <div class="card-body">
+                <div class="status-tag">● 标注完成</div>
+                <div style="font-size: 0.85rem; font-weight: bold; margin-bottom: 15px; height: 1.2rem; overflow: hidden;">
+                    {{ v.path.split('/')[-1] }}
+                </div>
+                
+                <div class="label-row">
+                    <label>地理位置:</label>
+                    <input type="text" id="m_loc_{{ loop.index }}" value="{{ v.labels.location }}">
+                </div>
+
+                <div class="label-row">
+                    <label>场景类型:</label>
+                    <select id="m_scene_{{ loop.index }}">
+                        <option value="highway" {% if v.labels.scene == 'highway' %}selected{% endif %}>高速公路</option>
+                        <option value="ramp" {% if v.labels.scene == 'ramp' %}selected{% endif %}>匝道</option>
+                        <option value="urban" {% if v.labels.scene == 'urban' %}selected{% endif %}>城市道路</option>
+                        <option value="tunnel" {% if v.labels.scene == 'tunnel' %}selected{% endif %}>隧道</option>
+                        <option value="parking" {% if v.labels.scene == 'parking' %}selected{% endif %}>停车场</option> </select>
+                    </select>
+                </div>
+
+                <div class="actions">
+                    <button class="btn-update" onclick="updateEntry('{{ v.path }}', {{ loop.index }})">保存修改</button>
+                    <button class="btn-reset" onclick="resetEntry('{{ v.path }}')">重置</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    async function updateEntry(path, idx) {
+        // 使用模板字符串 `${idx}` 来匹配 HTML 中的 ID
+        const locValue = document.getElementById(`m_loc_${idx}`).value;
+        const sceneValue = document.getElementById(`m_scene_${idx}`).value;
+
+        const labels = {
+            location: locValue,
+            scene: sceneValue
+        };
+
+        const res = await fetch('/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ path, labels })
+        });
+
+        if(res.ok) {
+            alert("修改已保存");
+        }
+    }
+
+    async function resetEntry(path) {
+        if(!confirm("确定要清空标注并移回待处理列表吗？")) return;
+        await fetch('/update', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ path, labels: {} }) // 发送空字典清空
+        });
+        location.reload();
+    }
+</script>
+</body>
+</html>

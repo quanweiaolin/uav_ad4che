@@ -1,0 +1,5 @@
+debug_mode: true
+
+# 在 debug 模式下跳过的 stage
+skip_stages:
+  - stabilization

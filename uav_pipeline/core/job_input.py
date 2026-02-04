@@ -3,6 +3,7 @@ import cv2 as cv
 import tempfile
 import shutil
 from uav_pipeline.core.artifact import Artifact
+import os
 
 class JobInput:
     def __init__(self, video_path: str, manual_ref: str = None, mask_path: str = None):
@@ -15,6 +16,7 @@ class JobInput:
 
     def prepare_reference_frame(self, workdir: str):
         workdir = Path(workdir)
+        workdir.mkdir(parents=True, exist_ok=True)
         if self.manual_ref:
             if not self.manual_ref.exists():
                 raise FileNotFoundError(f"Manual reference not found: {self.manual_ref}")
@@ -49,7 +51,7 @@ class JobInput:
             ref_art = Artifact(
                 stage="input",   # 或者 "job_input"，看你设计
                 name="reference_frame",
-                kind="jpg",              # 也可以根据实际文件类型自动判断
+                kind="reference pic input",              # 也可以根据实际文件类型自动判断
                 local_path=self.ref_frame_path,
                 meta={
                     "reference_frame": self.manual_ref if self.manual_ref else f"default fisrt frame"
@@ -62,7 +64,7 @@ class JobInput:
             mask_art = Artifact(
                 stage="input",
                 name="mask",
-                kind="png",
+                kind="mask pic input",
                 local_path=self.mask_path,
                 meta={},
                 persistent=False,

@@ -15,16 +15,16 @@ class ArtifactManager:
     #             )
 
     def finalize_job(self,context):
-        manifest = {
-            "job_id": context.job_id,
-            "artifacts": [
-                a.to_dict() for a in context.artifacts_register.list()
-            ]
-        }
+        # manifest = {
+        #     "job_id": context.job_id,
+        #     "artifacts": [
+        #         a.to_dict() for a in context.artifacts_register.list()
+        #     ]
+        # }
 
-        manifest_path = context.workdir / "manifest.json"
-        with open(manifest_path, "w") as f:
-            json.dump(manifest, f, indent=2)
+        # manifest_path = context.workdir / "manifest.json"
+        # with open(manifest_path, "w") as f:
+        #     json.dump(manifest, f, indent=2)
 
         for artifact in context.artifacts_register.list():
             if artifact.persistent:

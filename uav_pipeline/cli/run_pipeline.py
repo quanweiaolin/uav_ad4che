@@ -35,13 +35,15 @@ def parse_args():
     parser.add_argument("--stage-config-dir", default=default_config_path + "/stages", help="Optional config YAML")
     parser.add_argument("--env-config", default=default_config_path + "/environments/local.yaml", help="Optional config YAML")
     parser.add_argument("--pipeline-config", default=default_config_path + "/pipeline/perception.yaml", help="Optional config YAML")
-    
+    parser.add_argument("--debug-mode",action='store_true',help="Debug Mode, skip unnecessary stages")
 
     args = parser.parse_args()
     if args.video_path and args.video_list:
         parser.error("Cannot specify both --video-path and --video-list")
     if not args.video_path and not args.video_list:
         parser.error("Must specify either --video-path or --video-list")
+    if args.debug_mode and args.video_list:
+        parser.error("--debug-mode cannot be used in batch mode (--video-list)")
 
     return args
 
@@ -68,7 +70,8 @@ def main():
             stage_config_dir=args.stage_config_dir,
             pipeline_config=args.pipeline_config,
             env_config = args.env_config,
-            manual_ref_frame=args.manual_ref_frame
+            manual_ref_frame=args.manual_ref_frame,
+            debug_mode = args.debug_mode
         )
     else:
         
@@ -95,7 +98,8 @@ def main():
                 stage_config_dir=args.stage_config_dir,
                 env_config = args.env_config, 
                 pipeline_config = args.pipeline_config,
-                manual_ref_frame=args.manual_ref_frame
+                manual_ref_frame=args.manual_ref_frame,
+                debug_mode = False
                 ): job
                 for job in jobs
             }

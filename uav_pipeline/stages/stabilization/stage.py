@@ -1,7 +1,7 @@
 import os
 import cv2 as cv
 from pathlib import Path
-from uav_pipeline.core.algo_registry import algo_registry
+# from uav_pipeline.core.algo_registry import algo_registry
 from uav_pipeline.core.artifact import Artifact
 from uav_pipeline.core.context import JobContext
 from uav_pipeline.core.stage import Stage
@@ -36,8 +36,8 @@ class Stabilization_Stage(Stage):
         artifact = Artifact(
             stage=self.stage_name,
             name="harris",
-            local_path=stage_dir,
-            kind ="video",
+            local_path=output_video,
+            kind ="stabilization_results",
             meta={
                 "algorithms": ctx.config.load_stage_config(self.stage_name)['algorithm'],
                 "params": params
