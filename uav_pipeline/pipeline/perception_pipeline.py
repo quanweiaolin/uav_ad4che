@@ -10,7 +10,7 @@ from uav_pipeline.stages.stabilization.stage import Stabilization_Stage
 
 PIPELINE = [
     Stabilization_Stage(),
-    DetectionStage(),
+    # DetectionStage(),
     # TrackingStage(),
     # StateStage(),
     # ScenarioStage()
