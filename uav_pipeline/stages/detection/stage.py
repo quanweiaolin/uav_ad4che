@@ -1,8 +1,8 @@
-from uav_pipeline.third_party.mmdet_backend.detector import MMRotateDetector
+from uav_training.mmdet_backend.detector import MMRotateDetector
 from uav_pipeline.core.artifact import Artifact
 from uav_pipeline.core.context import JobContext
 from uav_pipeline.core.stage import Stage
-from uav_pipeline.core.schema import Obj, FrameData
+from uav_pipeline.core.schema import Obj, FrameDatauav_training
 import torch
 import cv2 as cv
 
