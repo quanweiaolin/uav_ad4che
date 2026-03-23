@@ -81,6 +81,13 @@ Dataset website:
 
 The dataset contains UAV recordings of congested highways and expressways, enabling analysis of driver behavior and interaction patterns.
 
+> Dataset duration: 5.12 hours
+> Total vehicles: 53,761
+> Lane changes: 16,099
+> Cut-in events: 3,331
+> Recording platform: UAV aerial platform
+> Scenarios: congested highway & expressway
+
 ## Development
 
 The project is under active development and aims to support:
