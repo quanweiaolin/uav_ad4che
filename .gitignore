@@ -67,6 +67,7 @@ tmp/
 # ----------------------------
 airflow/
 airflow.cfg
+config/airflow.cfg
 logs/
 *.log
 
